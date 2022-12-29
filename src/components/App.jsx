@@ -97,7 +97,7 @@ export class App extends Component {
         {status === "modal" && 
           <Modal photo={currentPhoto} closeModal={this.handleCloseModal} />
         }
-        <ToastContainer />
+        <ToastContainer autoClose={3000}/>
       </Wrapper>
     );
   };

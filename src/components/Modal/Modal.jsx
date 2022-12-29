@@ -11,14 +11,17 @@ export const Modal = ({ photo, closeModal }) => {
     };
 
     function handleEscPress(e) {
-       console.log("User pressed:", e.key); 
+        console.log('I am pressed key'); // Doesn't work.
+        if (e.code === "Escape") {
+            closeModal();
+        }
     };
     
     return (
         <Overlay
             onClick={handleBackdropClick}
             onKeyDown={handleEscPress}>
-            <ModalPhoto>
+            <ModalPhoto >
                 <img src={largeImageURL} alt={tags} width="1000" height="750"/>
             </ModalPhoto>
         </Overlay>
