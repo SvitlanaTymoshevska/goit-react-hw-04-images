@@ -13,7 +13,7 @@ export const Modal = ({ photo, closeModal }) => {
     return (
         <Overlay onClick={handleBackdropClick}>
             <ModalPhoto>
-                <img src={largeImageURL} alt={tags} width="1000" height="750"/>
+                <img src={largeImageURL} alt={tags} width="1200" height="900"/>
             </ModalPhoto>
         </Overlay>
     );
