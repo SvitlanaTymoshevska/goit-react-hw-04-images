@@ -9,7 +9,6 @@ import { Modal } from "components/Modal/Modal";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const pixabay = new PixabayAPI();
 
 export class App extends Component {
@@ -32,8 +31,14 @@ export class App extends Component {
     this.setState({ status: "modal", currentPhoto: img});
   };
 
-  handleCloseModal = () => {
+  closeModal = () => {
     this.setState({ status: "resolved" });
+  };
+
+  handleEscPress = (e) => {
+      if (e.code === "Escape") {
+          this.closeModal();
+      }
   };
 
   async getPhotos() {
@@ -72,32 +77,31 @@ export class App extends Component {
     const { status, photos, currentPhoto } = this.state;
 
     return (
-      <Wrapper>
+      <Wrapper tabIndex={0} onKeyDown={this.handleEscPress}>
+        
         <Searchbar onSubmit={this.handleSubmit} />
 
-        {(status === "resolved" || status === "pending") &&
+        {(status !== "idle") &&
           <ImageGallery photos={photos} onClick={this.handleImgClick} />}
 
         {status === "pending" && 
-        <ThreeDots 
-          height="80" 
-          width="80" 
-          radius="9"
-          color="#3f51b5" 
-          ariaLabel="three-dots-loading"
-          wrapperStyle={{"justifyContent":"center"}}
-          visible={true}
-        />
-        }
+          <ThreeDots 
+            height="80" 
+            width="80" 
+            radius="9"
+            color="#3f51b5" 
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{"justifyContent":"center"}}
+            visible={true}/>}
 
         {status === "resolved" &&
-          <Button onClick={this.handleLoadMoreClick}/>
-        }
+          <Button onClick={this.handleLoadMoreClick} />}
 
         {status === "modal" && 
-          <Modal photo={currentPhoto} closeModal={this.handleCloseModal} />
-        }
-        <ToastContainer autoClose={3000}/>
+          <Modal photo={currentPhoto} closeModal={this.closeModal} />}
+        
+        <ToastContainer autoClose={3000} />
+
       </Wrapper>
     );
   };
