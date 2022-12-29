@@ -1,24 +1,27 @@
 import React, { Component } from "react";
 import { PixabayAPI } from "api/api-server";
-import { Audio } from 'react-loader-spinner';
 import { Wrapper } from "components/App.styled";
 import { Searchbar } from "components/Searchbar/Searchbar";
 import { ImageGallery } from "components/ImageGallery/ImageGallery";
+import { ThreeDots } from 'react-loader-spinner';
 import { Button } from "components/Button/Button";
 import { Modal } from "components/Modal/Modal";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const pixabay = new PixabayAPI();
 
 export class App extends Component {
   state = {
+    status: "idle",
     query: "",
     photos: [],
-    status: "idle",
-    currentPhoto: "",
+    currentPhoto: {},
   };
 
   handleSubmit = (value) => {
-    this.setState({ query: value, status: "pending"});
+    this.setState({ query: value });
   };
 
   handleLoadMoreClick = () => { 
@@ -29,7 +32,12 @@ export class App extends Component {
     this.setState({ status: "modal", currentPhoto: img});
   };
 
-  async getPhotos () {
+  handleCloseModal = () => {
+    this.setState({ status: "resolved" });
+  };
+
+  async getPhotos() {
+    this.setState({ status: "pending"});
     pixabay.query = this.state.query;
 
     try {
@@ -47,42 +55,49 @@ export class App extends Component {
 
     }
     catch (error) {
-      alert(error);
-      this.setState({ status: "rejected"});
+      this.setState({ status: "idle" });
+      toast.error(error.message);
     } 
   };
 
   componentDidUpdate(_, prevState) {
     if (this.state.query !== prevState.query) {
+      this.setState({ photos: [], status: "idle" });
+      pixabay.resetPage();
       this.getPhotos();
     }
   };
 
   render() {
-    const { photos, status, currentPhoto } = this.state;
+    const { status, photos, currentPhoto } = this.state;
 
     return (
       <Wrapper>
         <Searchbar onSubmit={this.handleSubmit} />
+
+        {(status === "resolved" || status === "pending") &&
+          <ImageGallery photos={photos} onClick={this.handleImgClick} />}
+
         {status === "pending" && 
-          <Audio
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="radio-loading"
-            wrapperStyle={{}}
-            wrapperClass="radio-wrapper"
-          />
+        <ThreeDots 
+          height="80" 
+          width="80" 
+          radius="9"
+          color="#3f51b5" 
+          ariaLabel="three-dots-loading"
+          wrapperStyle={{"justifyContent":"center"}}
+          visible={true}
+        />
         }
-        {status === "resolved" && 
-          <>
-          <ImageGallery photos={photos} onClick={this.handleImgClick}/>
+
+        {status === "resolved" &&
           <Button onClick={this.handleLoadMoreClick}/>
-          </>
         }
+
         {status === "modal" && 
-          <Modal photo={currentPhoto} />
+          <Modal photo={currentPhoto} closeModal={this.handleCloseModal} />
         }
+        <ToastContainer />
       </Wrapper>
     );
   };

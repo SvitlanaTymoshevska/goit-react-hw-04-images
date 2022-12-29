@@ -4,14 +4,13 @@ import { GalleryItem, GalleryItemImage } from "components/ImageGallery/ImageGall
 export const ImageGalleryItem = ({ photo, onClick }) => {
     const { tags, webformatURL, largeImageURL } = photo;
 
-    function handleClick(e) {
-        onClick(largeImageURL);
+    function handleClick() {
+        onClick({ tags, largeImageURL });
     };
-
     
     return (
         <GalleryItem>
-            <GalleryItemImage srcset={largeImageURL} src={webformatURL} alt={tags} onClick={handleClick} />
+            <GalleryItemImage src={webformatURL} alt={tags} onClick={handleClick} />
         </GalleryItem>
     );
 };

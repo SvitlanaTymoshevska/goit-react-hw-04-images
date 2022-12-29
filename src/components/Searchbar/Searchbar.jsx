@@ -12,11 +12,11 @@ export class Searchbar extends Component {
         value: "",
     };
 
-    onChange = (e) => {
+    handleChange = (e) => {
         this.setState({value: e.currentTarget.value});
     };
 
-    onSubmit = (e) => {
+    handleSubmit = (e) => {
         e.preventDefault();
 
         this.props.onSubmit(this.state.value);
@@ -25,7 +25,7 @@ export class Searchbar extends Component {
     render() { 
         return (
             <Wrapper>
-                <SearchForm onSubmit={this.onSubmit}>
+                <SearchForm onSubmit={this.handleSubmit}>
                     <SearchFormButton type="submit">
                         <SearchFormButtonLabel>Search</SearchFormButtonLabel>
                         <ImSearch size={20} />
@@ -38,7 +38,7 @@ export class Searchbar extends Component {
                         autoComplete="off"
                         autoFocus
                         placeholder="Search images and photos"
-                        onChange={this.onChange}
+                        onChange={this.handleChange}
                     />
                 </SearchForm>
             </Wrapper>

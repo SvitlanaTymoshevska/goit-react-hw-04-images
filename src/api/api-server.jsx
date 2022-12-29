@@ -34,8 +34,7 @@ export class PixabayAPI {
         if (this.shownPhotos >= this.totalHits) {
             throw new Error("We're sorry, but you've reached the end of search results.");
         }; 
-        return photos;
-        
+        return photos; 
     }
 
     increasePage() { 
