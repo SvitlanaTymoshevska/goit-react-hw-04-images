@@ -13,7 +13,7 @@ const pixabay = new PixabayAPI();
 
 export class App extends Component {
   state = {
-    status: "idle",
+    status: "idle",  // status: "idle", "pending", "resolved", "notLoadMore", "modal"
     query: "",
     photos: [],
     currentPhoto: {},
