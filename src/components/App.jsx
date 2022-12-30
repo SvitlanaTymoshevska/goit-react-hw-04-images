@@ -47,13 +47,18 @@ export class App extends Component {
 
     try {
       const photosAllInfo = await pixabay.getPhotos();
-      const photosNecessaryInfo = photosAllInfo.map(({ id, tags, webformatURL, largeImageURL }) => ({ id, tags, webformatURL, largeImageURL }));
-
+      const photosNecessaryInfo = photosAllInfo.photos.map(({ id, tags, webformatURL, largeImageURL }) => ({ id, tags, webformatURL, largeImageURL }));
+   
       if (this.state.photos === []) {
         this.setState({photos: photosNecessaryInfo, status: "resolved" });
       } 
       else {
         this.setState(({ photos }) => ({ photos: [...photos, ...photosNecessaryInfo], status: "resolved" }));
+      };
+
+      if (photosAllInfo.notLoadMore) {
+        this.setState({ status: "notLoadMore"})
+        toast.info("You've reached the end of search results.");
       };
       
       pixabay.increasePage();
@@ -94,7 +99,7 @@ export class App extends Component {
             wrapperStyle={{"justifyContent":"center"}}
             visible={true}/>}
 
-        {status === "resolved" &&
+        {(status === "resolved" && status !== "notLoadMore") &&
           <Button onClick={this.handleLoadMoreClick} />}
 
         {status === "modal" && 
