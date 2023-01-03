@@ -1,47 +1,43 @@
-import React, { Component } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { ImSearch} from 'react-icons/im';
 import { Wrapper, SearchForm, SearchFormButton, SearchFormButtonLabel, SearchFormInput } from "components/Searchbar/Searchbar.styled";
 
-export class Searchbar extends Component {
-    static propTypes = {
+export const Searchbar = ({onSubmit}) => {
+    const [value, setValue] = useState("");
+
+    const handleChange = (event) => {
+        setValue(event.currentTarget.value);
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        onSubmit(value.trim());
+        setValue("");
+    };
+ 
+    return (
+        <Wrapper>
+            <SearchForm onSubmit={handleSubmit}>
+                <SearchFormButton type="submit">
+                    <SearchFormButtonLabel>Search</SearchFormButtonLabel>
+                    <ImSearch size={20} />
+                </SearchFormButton>
+
+                <SearchFormInput
+                    className="input"
+                    type="text"
+                    value={value}    
+                    autoComplete="off"
+                    autoFocus
+                    placeholder="Search images and photos"
+                    onChange={handleChange}
+                />
+            </SearchForm>
+        </Wrapper>
+    );
+}
+
+Searchbar.propTypes = {
         onSubmit: PropTypes.func.isRequired,
     };
-
-    state = {
-        value: "",
-    };
-
-    handleChange = (e) => {
-        this.setState({value: e.currentTarget.value});
-    };
-
-    handleSubmit = (e) => {
-        e.preventDefault();
-        this.props.onSubmit(this.state.value.trim());
-        this.setState({value: "",});
-    };
-
-    render() { 
-        return (
-            <Wrapper>
-                <SearchForm onSubmit={this.handleSubmit}>
-                    <SearchFormButton type="submit">
-                        <SearchFormButtonLabel>Search</SearchFormButtonLabel>
-                        <ImSearch size={20} />
-                    </SearchFormButton>
-
-                    <SearchFormInput
-                        className="input"
-                        type="text"
-                        value={this.state.value}    
-                        autoComplete="off"
-                        autoFocus
-                        placeholder="Search images and photos"
-                        onChange={this.handleChange}
-                    />
-                </SearchForm>
-            </Wrapper>
-        );
-    };
-}

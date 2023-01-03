@@ -1,113 +1,97 @@
-import React, { Component } from "react";
-import { PixabayAPI } from "api/api-server";
+import { useState, useEffect, useRef } from "react";
+
+import { getPhotosFromApi } from "services/api-server";
+
 import { Wrapper } from "components/App.styled";
 import { Searchbar } from "components/Searchbar/Searchbar";
 import { ImageGallery } from "components/ImageGallery/ImageGallery";
 import { ThreeDots } from 'react-loader-spinner';
 import { Button } from "components/Button/Button";
-import { Modal } from "components/Modal/Modal";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const pixabay = new PixabayAPI();
+const STATUS = {
+  idle: "idle",
+  pending: "pending",
+  resolved: "resolved",
+  notLoadMore: "notLoadMore",
+};
 
-export class App extends Component {
-  state = {
-    status: "idle",  // status: "idle", "pending", "resolved", "notLoadMore", "modal"
-    query: "",
-    photos: [],
-    currentPhoto: {},
+export const App = () => {
+  const [status, setStatus] = useState(STATUS.idle);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [photos, setPhotos] = useState([]);
+  const firstRender = useRef(true);
+
+  const handleSubmit = (value) => {
+    setQuery(value);
+    setPage(1);
+    setPhotos([]);
   };
 
-  handleSubmit = (value) => {
-    this.setState({ query: value });
+  const handleLoadMoreClick = () => { 
+   setPage(prevPage => prevPage + 1);
   };
 
-  handleLoadMoreClick = () => { 
-    this.getPhotos();
-  };
+  useEffect(() => {
+    if (firstRender.current) {
 
-  handleImgClick = (img) => {
-    this.setState({ status: "modal", currentPhoto: img});
-  };
-
-  closeModal = () => {
-    this.setState({ status: "resolved" });
-  };
-
-  handleEscPress = (e) => {
-      if (e.code === "Escape") {
-          this.closeModal();
+      firstRender.current = false;
+      console.log("First render", query, page);
+      return;
+    }
+    
+    console.log("Next render", query, page);
+    
+    async function getPhotos() {
+      setStatus(STATUS.pending);
+      try {
+        const photosAllInfo = await getPhotosFromApi(query, page);
+        const photosNecessaryInfo = photosAllInfo.photos.map(({ id, tags, webformatURL, largeImageURL }) => ({ id, tags, webformatURL, largeImageURL }));
+    
+        setPhotos(photos => [...photos, ...photosNecessaryInfo]);
+        
+        if (photosAllInfo.notLoadMore) {
+          setStatus(STATUS.notLoadMore);
+          toast.info("You've reached the end of search results.");
+        } else { 
+          setStatus(STATUS.resolved);
+        };
       }
-  };
-
-  async getPhotos() {
-    this.setState({ status: "pending"});
-    pixabay.query = this.state.query;
-
-    try {
-      const photosAllInfo = await pixabay.getPhotos();
-      const photosNecessaryInfo = photosAllInfo.photos.map(({ id, tags, webformatURL, largeImageURL }) => ({ id, tags, webformatURL, largeImageURL }));
-   
-      if (this.state.photos === []) {
-        this.setState({photos: photosNecessaryInfo, status: "resolved" });
+      catch (error) {
+        setStatus(STATUS.idle);
+        toast.error(error.message);
       } 
-      else {
-        this.setState(({ photos }) => ({ photos: [...photos, ...photosNecessaryInfo], status: "resolved" }));
-      };
+    };
 
-      if (photosAllInfo.notLoadMore) {
-        this.setState({ status: "notLoadMore"})
-        toast.info("You've reached the end of search results.");
-      };
+    // getPhotos();
+
+  }, [query, page]);
+
+  return (
+    <Wrapper>
       
-      pixabay.increasePage();
+      <Searchbar onSubmit={handleSubmit} />
 
-    }
-    catch (error) {
-      this.setState({ status: "idle" });
-      toast.error(error.message);
-    } 
-  };
+      {(status !== STATUS.idle) &&
+        <ImageGallery photos={photos} />}
 
-  componentDidUpdate(_, prevState) {
-    if (this.state.query !== prevState.query) {
-      this.setState({ photos: [], status: "idle" });
-      pixabay.resetPage();
-      this.getPhotos();
-    }
-  };
+      {status === STATUS.pending && 
+        <ThreeDots 
+          height="80" 
+          width="80" 
+          radius="9"
+          color="#3f51b5" 
+          ariaLabel="three-dots-loading"
+          wrapperStyle={{"justifyContent":"center"}}
+          visible={true}/>}
 
-  render() {
-    const { status, photos, currentPhoto } = this.state;
+      {(status === STATUS.resolved && status !== STATUS.notLoadMore) &&
+        <Button onClick={handleLoadMoreClick} />}
+      
+      <ToastContainer autoClose={3000} />
 
-    return (
-      <Wrapper tabIndex={0} onKeyDown={this.handleEscPress}>
-        
-        <Searchbar onSubmit={this.handleSubmit} />
-
-        {(status !== "idle") &&
-          <ImageGallery photos={photos} onClick={this.handleImgClick} />}
-
-        {status === "pending" && 
-          <ThreeDots 
-            height="80" 
-            width="80" 
-            radius="9"
-            color="#3f51b5" 
-            ariaLabel="three-dots-loading"
-            wrapperStyle={{"justifyContent":"center"}}
-            visible={true}/>}
-
-        {(status === "resolved" && status !== "notLoadMore") &&
-          <Button onClick={this.handleLoadMoreClick} />}
-
-        {status === "modal" && 
-          <Modal photo={currentPhoto} closeModal={this.closeModal} />}
-        
-        <ToastContainer autoClose={3000} />
-
-      </Wrapper>
-    );
-  };
+    </Wrapper>
+  );
 };

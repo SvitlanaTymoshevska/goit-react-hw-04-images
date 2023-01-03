@@ -5,7 +5,7 @@ export const Modal = ({ photo, closeModal }) => {
     const { largeImageURL, tags } = photo;
 
     function handleBackdropClick(e) {
-        if (e.target.nodeName !== 'IMG') {
+        if (e.target === e.currentTarget) {
             closeModal();
         };
     };

@@ -2,16 +2,17 @@ import PropTypes from "prop-types";
 import { Gallery } from "components/ImageGallery/ImageGallery.styled";
 import { ImageGalleryItem } from "components/ImageGallery/ImageGalleryItem";
 
-export const ImageGallery = ({ photos, onClick }) => {
+export const ImageGallery = ({ photos }) => {
     return (
         <Gallery>
-            {photos.map(photo => (
+            {photos.map(({ id, ...rest }) => { 
+                return (
                 <ImageGalleryItem
-                    key={photo.id}
-                    photo={photo}
-                    onClick={onClick}
+                    key={id}
+                    photo={rest}
                 />
-            ))}
+            )  
+            })}
         </Gallery>
     );
 };
@@ -25,5 +26,4 @@ ImageGallery.propTypes = {
             largeImageURL: PropTypes.string.isRequired,
         })
     ),
-    onClick: PropTypes.func.isRequired,
 };
