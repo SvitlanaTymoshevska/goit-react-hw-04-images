@@ -25,6 +25,9 @@ export const App = () => {
   const firstRender = useRef(true);
 
   const handleSubmit = (value) => {
+    if (firstRender.current) {
+      firstRender.current = false;
+    }
     setQuery(value);
     setPage(1);
     setPhotos([]);
@@ -36,14 +39,9 @@ export const App = () => {
 
   useEffect(() => {
     if (firstRender.current) {
-
-      firstRender.current = false;
-      console.log("First render", query, page);
       return;
     }
-    
-    console.log("Next render", query, page);
-    
+
     async function getPhotos() {
       setStatus(STATUS.pending);
       try {
@@ -65,7 +63,7 @@ export const App = () => {
       } 
     };
 
-    // getPhotos();
+    getPhotos();
 
   }, [query, page]);
 
